@@ -1,0 +1,245 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using DAL.Models
+
+@(
+Html.DevExtreme().DataGrid<DAL.Models.Employee>()
+    .ID("employeesGrid")
+    .ShowBorders(true)
+    .Width("100%")
+    .ColumnAutoWidth(false)
+    .Scrolling(s => s
+        .Mode(GridScrollingMode.Standard)
+        .ShowScrollbar(ShowScrollbarMode.Always)
+    )
+    .Paging(p => p.Enabled(false))
+    .Editing(e => e.Mode(GridEditMode.Popup)
+        .AllowUpdating(false)
+        .AllowAdding(true)
+        .AllowDeleting(false)
+        .Popup(p => p
+            .Title("Add Employee")
+            .ShowTitle(true)
+            .Width(700)
+            .Height(400)
+            .OnShowing("function(e) { console.log('Popup showing'); }")
+        )
+        .Form(f => f.Items(items =>
+        {
+            items.AddGroup()
+                .ColCount(2)
+                .ColSpan(2)
+                .Items(groupItems =>
+                {
+                    groupItems.AddSimpleFor(m => m.Name).DataField("name");
+                    groupItems.AddSimpleFor(m => m.DealerID).DataField("dealerID");
+                    groupItems.AddSimpleFor(m => m.ServiceID).DataField("serviceID");
+                    groupItems.AddSimpleFor(m => m.Email)
+                        .DataField("email")
+                        .Editor(e => e.TextBox().ReadOnly(true)).Visible(false);
+                    groupItems.AddSimpleFor(m => m.TCIDNO)
+                        .DataField("tcidno")
+                        .Editor(e => e.TextBox().MaxLength(11))
+                        .ValidationRules(rules =>
+                        {
+                            rules.AddPattern()
+                                .Pattern("^[0-9]{11}$")
+                                .Message("TC Kimlik No 11 haneli rakamlardan oluşmalıdır");
+                        });
+                    groupItems.AddSimpleFor(m => m.IsTechnician).DataField("isTechnician").Editor(e => e.CheckBox());
+                    groupItems.AddSimpleFor(m => m.CreatedOn).DataField("createdOn")
+                        .Editor(e => e.DateBox()
+                            .DisplayFormat("dd/MM/yyyy HH:mm")
+                            .Type(DateBoxType.DateTime)
+                            .PickerType(DateBoxPickerType.Calendar)
+                            .Width(200));
+                });
+        }))
+    )
+    .Columns(columns =>
+    {
+        columns.Add()
+        .Width(150)
+        .Caption("Actions")
+        .AllowFiltering(false)
+        .AllowSorting(false)
+        .CellTemplate(@<text>
+    <div class="d-flex justify-content-around">
+        <button class="btn btn-link text-primary p-0 text-decoration-none" onclick="editEmployeeRecord(<%- data.id %>)">
+            <i class="bi bi-pencil-square me-1"></i>
+            Edit
+        </button>
+        <button class="btn btn-link text-danger p-0 text-decoration-none" onclick="deleteEmployeeRecord(<%- data.id %>)">
+            <i class="bi bi-trash me-1"></i>
+            Delete
+        </button>
+    </div>
+</text>);
+        columns.AddFor(m => m.ID).DataField("id").Width(140);
+        columns.AddFor(m => m.Name).DataField("name").Width(260);
+        columns.AddFor(m => m.TCIDNO).DataField("tcidno").Width(260);
+        columns.AddFor(m => m.DealerID).DataField("dealerID").Width(260).Visible(true)
+            .Lookup(lookup => lookup
+                .DataSource(s => s.Mvc().Controller("Home").LoadAction("GetDealersForUsersAndServices").Key("id"))
+                .DisplayExpr("name")
+                .ValueExpr("id")
+            );
+        columns.AddFor(m => m.ServiceID).DataField("serviceID").Width(260).Visible(true)
+        .Lookup(lookup => lookup
+            .DataSource(s => s.Mvc().Controller("Home").LoadAction("GetServicesByID").Key("id"))
+            .DisplayExpr("name")
+            .ValueExpr("id")
+        );
+        columns.AddFor(m => m.Email).DataField("email").Width(260);
+        columns.AddFor(m => m.IsTechnician).DataField("isTechnician").Width(200);
+        columns.AddFor(m => m.CreatedOn).DataField("createdOn").Visible(false);
+
+    })
+    .DataSource(d => d.Mvc()
+        .Controller("Home")
+        .LoadAction("GetEmployees")
+        .InsertAction("AddEmployee")
+        .DeleteAction("DeleteEmployee")
+        .UpdateAction("UpdateEmployee")
+        .Key("id")
+    )
+)
+
+<script>
+    function initializeEmployeeGrid() {
+        console.log("Grid initialization started");
+
+        var dataGrid = $("#employeesGrid").dxDataGrid("instance");
+
+        window.employeeForm_onFieldDataChanged = function(e) {
+            try {
+                console.log("Field changed event details:", e);
+
+                var popup = dataGrid._editPopup;
+                var form = popup.$content().find(".dx-form").dxForm("instance");
+
+                if (!form) {
+                    console.error("Form instance not found");
+                    return;
+                }
+
+                var formData = form.option("formData");
+                if (formData.isTechnician === undefined || formData.isTechnician === null) {
+                    formData.isTechnician = false; // veya 0
+                    form.option("formData", formData);
+                }
+                console.log("Current form data:", formData);
+
+                if (e.dataField === "name") {
+                    formData[e.dataField] = e.value;
+                    if (formData.name) {
+                        formData.email = (formData.name + "@@hyundaiassan.com.tr")
+                            .toLowerCase()
+                            .replace(/\s+/g, '')
+                            .replace(/[ğ]/g, 'g')
+                            .replace(/[ü]/g, 'u')
+                            .replace(/[ş]/g, 's')
+                            .replace(/[ı]/g, 'i')
+                            .replace(/[ö]/g, 'o')
+                            .replace(/[ç]/g, 'c');
+
+                        console.log("Generated email:", formData.email);
+
+                        var emailEditor = form.getEditor("email");
+                        if (emailEditor) {
+                            emailEditor.option("value", formData.email);
+                        }
+                    }
+
+                    form.option("formData", formData);
+                    var changes = dataGrid.option("editing.changes");
+
+                    if (changes.length > 0) {
+                        changes[0].data = { ...changes[0].data, ...formData };
+                        dataGrid.option("editing.changes", changes);
+                    }
+                }
+            } catch (error) {
+                console.error("Error in employeeForm_onFieldDataChanged:", error);
+            }
+        };
+
+        dataGrid.on("saving", function(e) {
+            console.log("Saving event triggered:", e);
+
+            var change = e.changes[0];
+            if (change && change.type !== "remove") {
+                var data = change.data;
+                if (!data.serviceID) {
+            // Mevcut satırın ServiceID'sini al
+                var currentRowData = e.component.getDataSource().items().find(item => item.id === change.key);
+                if (currentRowData) {
+                    data.serviceID = currentRowData.serviceID;
+                 }
+                }
+                if (data && data.name) {
+                    data.email = (data.name + "@@hyundaiassan.com.tr")
+                        .toLowerCase()
+                        .replace(/\s+/g, '')
+                        .replace(/[ğ]/g, 'g')
+                        .replace(/[ü]/g, 'u')
+                        .replace(/[ş]/g, 's')
+                        .replace(/[ı]/g, 'i')
+                        .replace(/[ö]/g, 'o')
+                        .replace(/[ç]/g, 'c');
+
+                    e.changes[0].data = data;
+                }
+            }
+        });
+
+        dataGrid.on("rowRemoved", function(e) {
+            console.log("Row successfully removed:", e);
+            dataGrid.refresh();
+        });
+
+        dataGrid.on("editingStart", function(e) {
+            console.log("Editing started:", e);
+            var editForm = e.component.getController('editing')._editForm;
+            if (editForm) {
+                editForm.option("onFieldDataChanged", window.employeeForm_onFieldDataChanged);
+            }
+        });
+    }
+
+    function editEmployeeRecord(id) {
+        var grid = $("#employeesGrid").dxDataGrid("instance");
+        grid.option("editing.popup.title", "Edit Employee");
+        grid.editRow(grid.getRowIndexByKey(id));
+    }
+
+    function deleteEmployeeRecord(id) {
+        var grid = $("#employeesGrid").dxDataGrid("instance");
+        grid.deleteRow(grid.getRowIndexByKey(id));
+    }
+
+    function onTechnicianChange(e) {
+        var form = e.component.getParentForm();
+        if (form) {
+            var formData = form.option("formData");
+            formData.isTechnician = e.value;
+            form.option("formData", formData);
+        }
+    }
+
+    $(document).on('click', '#employeesGrid .dx-datagrid-addrow-button', function() {
+        var grid = $("#employeesGrid").dxDataGrid("instance");
+        grid.option("editing.popup.title", "Add New Employee");
+        grid.addRow();
+    });
+
+    $(function() {
+        console.log("Document ready");
+        initializeEmployeeGrid();
+    });
+</script>
+
+<style>
+    #employeesGrid {
+        width: 100%;
+    }
+</style>

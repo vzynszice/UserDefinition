@@ -1,0 +1,218 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using DAL.Models
+
+@(Html.DevExtreme().DataGrid<DAL.Models.User>()
+    .ID("gridContainer")
+    .ShowBorders(true)
+    .Width("100%")
+    .ColumnAutoWidth(false)
+    .Scrolling(s => s
+        .Mode(GridScrollingMode.Standard)
+        .ShowScrollbar(ShowScrollbarMode.Always)
+    )
+    .Paging(p => p.Enabled(false))
+    .Editing(e => e
+        .Mode(GridEditMode.Popup)
+        .AllowUpdating(false)
+        .AllowAdding(true)
+        .AllowDeleting(false)
+        .UseIcons(true)
+        .Popup(p => p
+            .Title("User")
+            .ShowTitle(true)
+            .Width(700)
+            .Height(525)
+            .OnShowing("function(e) { console.log('Popup showing'); }")
+        )
+        .Form(f => f.Items(items =>
+        {
+            items.AddGroup()
+                .ColCount(2)
+                .ColSpan(2)
+                .Items(groupItems =>
+                {
+                    groupItems.AddSimpleFor(m => m.Name)
+                        .DataField("name")
+                        .IsRequired(true);
+
+                    groupItems.AddSimpleFor(m => m.Surname)
+                        .DataField("surname")
+                        .IsRequired(true);
+
+                    groupItems.AddSimpleFor(m => m.Email)
+                        .DataField("email")
+                        .Editor(e => e.TextBox().ReadOnly(true)).Visible(false) ;
+                    groupItems.AddSimpleFor(m => m.Username).DataField("username");
+                    groupItems.AddSimpleFor(m => m.Password).DataField("password");
+                    groupItems.AddSimpleFor(m => m.DealerID).DataField("dealerID");
+                    groupItems.AddSimpleFor(m => m.ServiceID).DataField("serviceID");
+                });
+        })
+    ))
+    .Columns(columns =>
+    {
+        columns.Add()
+            .Caption("Actions")
+            .AllowFiltering(false)
+            .AllowSorting(false)
+            .Width(150)
+            .CellTemplate(@<text>
+    <div class="d-flex justify-content-around">
+        <button class="btn btn-link text-primary p-0 text-decoration-none" onclick="editUser(<%- data.id %>)">
+            <i class="bi bi-pencil-square me-1"></i>
+            Edit
+        </button>
+        <button class="btn btn-link text-danger p-0 text-decoration-none" onclick="deleteUser(<%- data.id %>)">
+            <i class="bi bi-trash me-1"></i>
+            Delete
+        </button>
+    </div>
+</text>);
+        columns.AddFor(m => m.ID).DataField("id").Width(120);
+        columns.AddFor(m => m.Username).DataField("username").Width(240);
+        columns.AddFor(m => m.Email).DataField("email").Width(240);
+        columns.AddFor(m => m.Password).DataField("password").Visible(false);
+        columns.AddFor(m => m.Name).DataField("name").Width(240);
+        columns.AddFor(m => m.Surname).DataField("surname").Width(240);
+        columns.AddFor(m => m.DealerID)
+            .DataField("dealerID")
+            .Width(240)
+            .Lookup(lookup => lookup
+                .DataSource(d => d.Mvc().Controller("Home").LoadAction("GetDealersForUsersAndServices").Key("id"))
+                .DisplayExpr("name")
+                .ValueExpr("id")
+            );
+        columns.AddFor(m => m.ServiceID)
+            .DataField("serviceID")
+            .Width(240)
+            .Lookup(lookup => lookup
+                .DataSource(d => d.Mvc().Controller("Home").LoadAction("GetServicesByID").Key("id"))
+                .DisplayExpr("name")
+                .ValueExpr("id")
+            );
+    })
+    .DataSource(d => d.Mvc()
+        .Controller("Home")
+        .LoadAction("GetUsers")
+        .UpdateAction("UpdateUser")
+        .InsertAction("AddUser")
+        .DeleteAction("DeleteUser")
+        .Key("id")
+    )
+)
+
+<script>
+    function initializeUserGrid() {
+        console.log("Grid initialization started");
+
+        var dataGrid = $("#gridContainer").dxDataGrid("instance");
+
+        window.userForm_onFieldDataChanged = function(e) {
+            try {
+                console.log("Field changed event details:", e);
+
+                var popup = dataGrid._editPopup;
+                var form = popup.$content().find(".dx-form").dxForm("instance");
+
+                if (!form) {
+                    console.error("Form instance not found");
+                    return;
+                }
+
+                var formData = form.option("formData");
+                console.log("Current form data:", formData);
+
+                if (e.dataField === "name" || e.dataField === "surname") {
+                    formData[e.dataField] = e.value;
+                    if (formData.name && formData.surname) {
+                        formData.email = (formData.name + "." + formData.surname + "@@hyundaiassan.com.tr")
+                            .toLowerCase()
+                            .replace(/\s+/g, '')
+                            .replace(/[ğ]/g, 'g')
+                            .replace(/[ü]/g, 'u')
+                            .replace(/[ş]/g, 's')
+                            .replace(/[ı]/g, 'i')
+                            .replace(/[ö]/g, 'o')
+                            .replace(/[ç]/g, 'c');
+
+                        console.log("Generated email:", formData.email);
+
+                        var emailEditor = form.getEditor("email");
+                        if (emailEditor) {
+                            emailEditor.option("value", formData.email);
+                        }
+                    }
+
+                    form.option("formData", formData);
+                    var changes = dataGrid.option("editing.changes");
+
+                    if (changes.length > 0) {
+                        changes[0].data = { ...changes[0].data, ...formData };
+                        dataGrid.option("editing.changes", changes);
+                    }
+                }
+            } catch (error) {
+                console.error("Error in userForm_onFieldDataChanged:", error);
+            }
+        };
+
+
+    dataGrid.on("saving", function(e) {
+        console.log("Saving event triggered:", e);
+
+        var change = e.changes[0];
+        if (change && change.type !== "remove") {  
+            var data = change.data;
+            if (data && data.name && data.surname) {  
+                data.email = (data.name + "." + data.surname + "@@hyundaiassan.com.tr")
+                    .toLowerCase()
+                    .replace(/\s+/g, '')
+                    .replace(/[ğ]/g, 'g')
+                    .replace(/[ü]/g, 'u')
+                    .replace(/[ş]/g, 's')
+                    .replace(/[ı]/g, 'i')
+                    .replace(/[ö]/g, 'o')
+                    .replace(/[ç]/g, 'c');
+
+                e.changes[0].data = data;
+            }
+        }
+    });
+
+    dataGrid.on("rowRemoved", function(e) {
+        console.log("Row successfully removed:", e);
+        dataGrid.refresh();
+    });
+
+        dataGrid.on("editingStart", function(e) {
+            console.log("Editing started:", e);
+            var editForm = e.component.getController('editing')._editForm;
+            if (editForm) {
+                editForm.option("onFieldDataChanged", window.userForm_onFieldDataChanged);
+            }
+        });
+
+        window.editUser = function(id) {
+            if (dataGrid) {
+                var rowIndex = dataGrid.getRowIndexByKey(id);
+                if (rowIndex >= 0) {
+                    dataGrid.editRow(rowIndex);
+                }
+            }
+        };
+
+        window.deleteUser = function(id) {
+            if (dataGrid) {
+                var rowIndex = dataGrid.getRowIndexByKey(id);
+                if (rowIndex >= 0) {
+                    dataGrid.deleteRow(rowIndex);
+                }
+            }
+        };
+    }
+
+    $(function() {
+        console.log("Document ready");
+        initializeUserGrid();
+    });
+</script>

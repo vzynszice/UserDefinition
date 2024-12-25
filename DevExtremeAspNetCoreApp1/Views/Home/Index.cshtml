@@ -1,0 +1,79 @@
+﻿@using DevExtreme.AspNet.Mvc
+@using DevExtreme.AspNet.Mvc.Builders
+@using DAL.Models
+
+<script>
+    DevExpress.config({ "serverDecimalSeparator": "," });
+    DevExpress.aspnet.setTemplateEngine();
+
+    function onDataLoaded(data) {
+        console.log("Data loaded successfully:", data);
+    }
+    function onLoadError(error) {
+        console.log("Load error:", error);
+    }
+    function onInitNewRow(e) {
+        console.log("Initializing new row:", e);
+    }
+    function onRowInserting(e) {
+        console.log("Row being inserted:", e);
+    }
+    $(function() {
+        var dataGrid = $("#gridContainer").dxDataGrid("instance");
+        console.log("Initial grid state:", dataGrid.getDataSource().items());
+
+        // TabPanel yüksekliğini ayarla
+        $("#tabPanel").dxTabPanel("instance").option("height", "100%");
+    });
+</script>
+
+<div class="tabpanel-container">
+    @(Html.DevExtreme().TabPanel()
+            .ID("tabPanel")
+            .SelectedIndex(0)
+            .AnimationEnabled(true)
+            .Height("100%")
+            .Items(items =>
+            {
+                items.Add()
+            .Title("Users")
+            .Template(@<text>
+        @Html.Partial("tabs/_UsersTabPartial")
+    </text>);
+                items.Add()
+            .Title("Dealers")
+            .Template(@<text>
+        @Html.Partial("tabs/_DealersTabPartial")
+    </text>);
+                items.Add()
+            .Title("Services")
+            .Template(@<text>
+        @Html.Partial("tabs/_ServicesTabPartial")
+    </text>);
+                items.Add()
+            .Title("Employees")
+            .Template(@<text>
+        @Html.Partial("tabs/_EmployeesTabPartial")
+    </text>);
+            })
+        )
+</div>
+
+<style>
+    #gridContainer {
+        
+        width: 100%;
+    }
+
+    .dx-datagrid-rowsview {
+        height: auto !important;
+    }
+
+    .dx-datagrid {
+        background-color: white;
+    }
+
+    .dx-tab-content {
+        padding: 8px !important;
+    }
+</style>
