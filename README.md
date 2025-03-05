@@ -1,8 +1,4 @@
-# Features
-- Create new User, Employee, Service, Dealer
-- Display existing Users, Employees, Services, Dealers
-- Update existing Users, Employees, Services, Dealers
-- Delete existing Users, Employees, Services, Dealers
+
 
 # Technologies
 - .NET
