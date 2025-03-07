@@ -1,7 +1,8 @@
 ﻿@using DevExtreme.AspNet.Mvc
 @using DAL.Models
 
-@(Html.DevExtreme().DataGrid<DAL.Models.Dealer>()
+<script src="~/js/grids/dealers-grid.js"></script>
+@(Html.DevExtreme().DataGrid<DAL.Models.DealerModel>()
     .ID("dealersGrid")
     .ShowBorders(true)
     .Width("100%")
@@ -79,122 +80,7 @@
         .Key("id")
     )
 )
-<script>
-    window.editDealerRecord = function(id) {
-        var dataGrid = $("#dealersGrid").dxDataGrid("instance");
-        if (dataGrid) {
-            var rowIndex = dataGrid.getRowIndexByKey(id);
-            if (rowIndex >= 0) {
-                dataGrid.editRow(rowIndex);
-            }
-        }
-    };
 
-    window.deleteDealerRecord = function(id) {
-        var dataGrid = $("#dealersGrid").dxDataGrid("instance");
-        if (dataGrid) {
-            var rowIndex = dataGrid.getRowIndexByKey(id);
-            if (rowIndex >= 0) {
-                dataGrid.deleteRow(rowIndex);
-            }
-        }
-    };
-
-    function initializeDealerGrid() {
-        console.log("Grid initialization started");
-        var dataGrid = $("#dealersGrid").dxDataGrid("instance");
-
-        window.dealerForm_onFieldDataChanged = function(e) {
-            try {
-                console.log("Field changed event details:", e);
-
-                var popup = dataGrid._editPopup;
-                var form = popup.$content().find(".dx-form").dxForm("instance");
-
-                if (!form) {
-                    console.error("Form instance not found");
-                    return;
-                }
-
-                var formData = form.option("formData");
-                console.log("Current form data:", formData);
-
-                if (e.dataField === "name") {
-                    formData[e.dataField] = e.value;
-                    if (formData.name) {
-                        formData.email = (formData.name + "@@hyundaiassan.com.tr")
-                            .toLowerCase()
-                            .replace(/\s+/g, '')
-                            .replace(/[ğ]/g, 'g')
-                            .replace(/[ü]/g, 'u')
-                            .replace(/[ş]/g, 's')
-                            .replace(/[ı]/g, 'i')
-                            .replace(/[ö]/g, 'o')
-                            .replace(/[ç]/g, 'c');
-
-                        console.log("Generated email:", formData.email);
-
-                        var emailEditor = form.getEditor("email");
-                        if (emailEditor) {
-                            emailEditor.option("value", formData.email);
-                        }
-                    }
-
-                    form.option("formData", formData);
-                    var changes = dataGrid.option("editing.changes");
-
-                    if (changes.length > 0) {
-                        changes[0].data = { ...changes[0].data, ...formData };
-                        dataGrid.option("editing.changes", changes);
-                    }
-                }
-            } catch (error) {
-                console.error("Error in dealerForm_onFieldDataChanged:", error);
-            }
-        };
-
-        dataGrid.on("saving", function(e) {
-            console.log("Saving event triggered:", e);
-
-            var change = e.changes[0];
-            if (change && change.type !== "remove") {
-                var data = change.data;
-                if (data && data.name) {
-                    data.email = (data.name + "@@hyundaiassan.com.tr")
-                        .toLowerCase()
-                        .replace(/\s+/g, '')
-                        .replace(/[ğ]/g, 'g')
-                        .replace(/[ü]/g, 'u')
-                        .replace(/[ş]/g, 's')
-                        .replace(/[ı]/g, 'i')
-                        .replace(/[ö]/g, 'o')
-                        .replace(/[ç]/g, 'c');
-
-                    e.changes[0].data = data;
-                }
-            }
-        });
-
-        dataGrid.on("rowRemoved", function(e) {
-            console.log("Row successfully removed:", e);
-            dataGrid.refresh();
-        });
-
-        dataGrid.on("editingStart", function(e) {
-            console.log("Editing started:", e);
-            var editForm = e.component.getController('editing')._editForm;
-            if (editForm) {
-                editForm.option("onFieldDataChanged", window.dealerForm_onFieldDataChanged);
-            }
-        });
-    }
-
-    // Document ready event handler
-    $(function() {
-        console.log("Document ready");
-        initializeDealerGrid(); // initializeUserGrid yerine initializeDealerGrid olarak düzeltildi
-    });
-</script>
 
 <style>
     #dealersGrid {

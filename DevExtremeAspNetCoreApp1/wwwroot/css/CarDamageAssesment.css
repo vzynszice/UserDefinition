@@ -1,0 +1,256 @@
+﻿/* ===== Genel Layout Stilleri ===== */
+.dx-datagrid {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.dx-datagrid-headers {
+    background: #f8f9fa;
+}
+
+/* Base checkbox styling */
+.dx-checkbox-container {
+    border: none !important;
+    height: 24px !important; /* Ensure enough height for the checkbox */
+}
+
+.dx-checkbox-icon {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    width: 24px !important; /* Make the icon area larger */
+    height: 24px !important; /* Make the icon area larger */
+}
+
+/* Checkmark styling */
+.dx-checkbox-checked .dx-checkbox-icon {
+    color: #0056b3 !important;
+    font-size: 18px !important; /* Slightly larger checkmark */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+    /* Position the checkmark properly */
+    .dx-checkbox-checked .dx-checkbox-icon:before {
+        position: relative !important;
+        top: 0 !important;
+        left: 0 !important;
+        margin: 0 !important;
+    }
+
+/* Remove hover effects */
+.dx-checkbox-icon:hover {
+    border: none !important;
+    background: transparent !important;
+}
+
+.damage-assessment-container {
+    padding: 20px;
+    margin: 20px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.header-section {
+    margin-bottom: 20px;
+}
+
+.content-wrapper {
+    display: flex;
+    gap: 40px; /* Arttırılmış boşluk */
+    margin: 0;
+    align-items: flex-start;
+}
+
+.grid-container {
+    flex: 1;
+    width: 50%;
+}
+
+/* ===== SVG Container ===== */
+.car-svg-container {
+    flex: 1; /* Eşit genişlik */
+    margin-left:30px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    position: relative; /* damage selector için */
+}
+
+    .car-svg-container svg {
+        width: 100%;
+        height: auto;
+    }
+
+/* ===== Car Part Hover ve Seçim Efektleri ===== */
+.car-part {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+    .car-part:hover,
+    .car-part.selected {
+        opacity: 0.9;
+        filter: brightness(1.1) drop-shadow(0 0 5px rgba(0,86,179,0.5));
+    }
+
+/* ===== Damage Selector ===== */
+.damage-selector {
+    position: absolute;
+    z-index: 1000;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    border: 1px solid #bbb7b7;
+    border-radius: 6px;
+}
+
+.damage-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    
+}
+
+.damage-option {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid #eee;
+}
+
+    .damage-option:hover {
+        background-color: #f8f9fa;
+        transform: translateX(2px);
+    }
+
+    .damage-option.active {
+        background-color: #e7f1ff;
+        border-color: #0056b3;
+    }
+
+.color-sample {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    border-radius: 6px;
+    border: 2px solid #b4b1b1;
+    box-shadow: inset 0 0 4px rgba(0,0,0,0.1);
+}
+
+.damage-name {
+    font-size: 14px;
+    color: #333;
+    font-weight: 500;
+}
+
+/* ===== Butonlar ===== */
+.button-container {
+    text-align: right;
+    padding: 0 20px 10px 0;
+    margin-bottom: 10px;
+}
+
+.save-button {
+    padding: 12px 24px;
+    font-size: 16px;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    background-color: #0056b3;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .save-button:hover {
+        background-color: #004494;
+    }
+
+.selector-buttons {
+    padding: 10px;
+    border-top: 1px solid #eee;
+    margin-top: 8px;
+    text-align: right;
+}
+
+.clean-button {
+    padding: 6px 12px;
+    background-color: #f8f9fa;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+    .clean-button:hover {
+        background-color: #e9ecef;
+        border-color: #bbb;
+    }
+
+.damage-legend {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 sütunlu grid */
+    gap: 10px;
+    padding: 12px;
+    background: white;
+    border-radius: 6px;
+    border: 1px solid #d3d3d3;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 15px;
+    width: 60%;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 4px;
+}
+
+.legend-color {
+    min-width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.legend-name {
+    font-size: 13px;
+    color: #333;
+}
+/* Seçili parça için stil */
+.car-part.selected .part-number-container circle {
+    fill: #0056b3;
+    stroke: #ffffff;
+}
+
+.car-part.selected .part-number-container text {
+    fill: #ffffff;
+}
+
+/* Hover efekti için (opsiyonel) */
+.car-part:hover .part-number-container circle {
+    stroke-width: 2;
+}
+.damage-selector .selected-part-name {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    margin-bottom: 8px;
+    margin-left: 3px;
+    font-weight: bold;
+    text-align: center;
+    color: #858282;
+}
+.damage-types {
+    margin-left: 20px;
+    text-align: center;
+    font-size: 20px;
+    font-weight: bold;
+    
+}

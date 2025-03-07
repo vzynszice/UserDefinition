@@ -2,8 +2,9 @@
 @using DevExtreme.AspNet.Mvc.Builders
 @using static DevExtreme.AspNet.Mvc.GridScrollingMode
 @using DAL.Models
+<script src="~/js/grids/services-grid.js"></script>
 
-@(Html.DevExtreme().DataGrid<DAL.Models.Service>()
+@(Html.DevExtreme().DataGrid<DAL.Models.ServiceModel>()
     .ID("servicesGrid")
     .ShowBorders(true)
     .Width("100%")
@@ -18,7 +19,7 @@
         .AllowAdding(true)
         .AllowDeleting(false)
         .Popup(p => p
-            .Title("Add Services")
+            .Title("Add Service")
             .ShowTitle(true)
             .Width(700)
             .Height(400)
@@ -85,124 +86,9 @@
 		.DeleteAction("DeleteService")
 		.UpdateAction("UpdateService")
         .Key("id")
+
     )
 )
-<script>
-    window.editServiceRecord = function(id) {
-        var dataGrid = $("#servicesGrid").dxDataGrid("instance");
-        if (dataGrid) {
-            var rowIndex = dataGrid.getRowIndexByKey(id);
-            if (rowIndex >= 0) {
-                dataGrid.editRow(rowIndex);
-            }
-        }
-    };
-
-    window.deleteServiceRecord = function(id) {
-        var dataGrid = $("#servicesGrid").dxDataGrid("instance");
-        if (dataGrid) {
-            var rowIndex = dataGrid.getRowIndexByKey(id);
-            if (rowIndex >= 0) {
-                dataGrid.deleteRow(rowIndex);
-            }
-        }
-    };
-
-    function initializeServiceGrid() {
-        console.log("Grid initialization started");
-        var dataGrid = $("#servicesGrid").dxDataGrid("instance");
-
-        window.serviceForm_onFieldDataChanged = function(e) {
-            try {
-                console.log("Field changed event details:", e);
-
-                var popup = dataGrid._editPopup;
-                var form = popup.$content().find(".dx-form").dxForm("instance");
-
-                if (!form) {
-                    console.error("Form instance not found");
-                    return;
-                }
-
-                var formData = form.option("formData");
-                console.log("Current form data:", formData);
-
-                if (e.dataField === "name") {
-                    formData[e.dataField] = e.value;
-                    if (formData.name) {
-                        formData.email = (formData.name + "@@hyundaiassan.com.tr")
-                            .toLowerCase()
-                            .replace(/\s+/g, '')
-                            .replace(/[ğ]/g, 'g')
-                            .replace(/[ü]/g, 'u')
-                            .replace(/[ş]/g, 's')
-                            .replace(/[ı]/g, 'i')
-                            .replace(/[ö]/g, 'o')
-                            .replace(/[ç]/g, 'c');
-
-                        console.log("Generated email:", formData.email);
-
-                        var emailEditor = form.getEditor("email");
-                        if (emailEditor) {
-                            emailEditor.option("value", formData.email);
-                        }
-                    }
-
-                    form.option("formData", formData);
-                    var changes = dataGrid.option("editing.changes");
-
-                    if (changes.length > 0) {
-                        changes[0].data = { ...changes[0].data, ...formData };
-                        dataGrid.option("editing.changes", changes);
-                    }
-                }
-            } catch (error) {
-                console.error("Error in dealerForm_onFieldDataChanged:", error);
-            }
-        };
-
-        dataGrid.on("saving", function(e) {
-            console.log("Saving event triggered:", e);
-
-            var change = e.changes[0];
-            if (change && change.type !== "remove") {
-                var data = change.data;
-                if (data && data.name) {
-                    data.email = (data.name + "@@hyundaiassan.com.tr")
-                        .toLowerCase()
-                        .replace(/\s+/g, '')
-                        .replace(/[ğ]/g, 'g')
-                        .replace(/[ü]/g, 'u')
-                        .replace(/[ş]/g, 's')
-                        .replace(/[ı]/g, 'i')
-                        .replace(/[ö]/g, 'o')
-                        .replace(/[ç]/g, 'c');
-
-                    e.changes[0].data = data;
-                }
-            }
-        });
-
-        dataGrid.on("rowRemoved", function(e) {
-            console.log("Row successfully removed:", e);
-            dataGrid.refresh();
-        });
-
-        dataGrid.on("editingStart", function(e) {
-            console.log("Editing started:", e);
-            var editForm = e.component.getController('editing')._editForm;
-            if (editForm) {
-                editForm.option("onFieldDataChanged", window.serviceForm_onFieldDataChanged);
-            }
-        });
-    }
-
-    // Document ready event handler
-    $(function() {
-        console.log("Document ready");
-        initializeServiceGrid(); // initializeUserGrid yerine initializeDealerGrid olarak düzeltildi
-    });
-</script>
 <style>
     #servicesGrid {
         width: 100%;

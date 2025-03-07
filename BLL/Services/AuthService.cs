@@ -1,22 +1,25 @@
 ﻿using DAL.Models;
-using DAL.db;
 using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
-using BLL.interfaces;
+using SystemManager.Abstractions.Auth;
+using SystemManager.Abstractions.Data;
 
 namespace BLL.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly HaosDbContext _context;
+        private readonly IRepositoryManager _repositoryManager;
 
-        public AuthService(HaosDbContext context)
+        public AuthService(IRepositoryManager repositoryManager)
         {
-            _context = context;
+            _repositoryManager = repositoryManager;
         }
-        public async Task<User> GetUserByUsernameAsync(string username)
+
+        public async Task<UserModel> GetUserByUsernameAsync(string username)
         {
-            return await _context.Users.FirstOrDefaultAsync(u => u.Username == username);
+            return await _repositoryManager
+                .GetRepository<UserModel>()
+                .GetQueryable()
+                .FirstOrDefaultAsync(u => u.Username == username);
         }
 
         public async Task<AuthResult> LoginAsync(string username, string password)
@@ -24,20 +27,25 @@ namespace BLL.Services
             var user = await GetUserByUsernameAsync(username);
             if (user == null)
             {
-                return new AuthResult { Succeeded = false, ErrorMessage = "User not found." };
+                return new AuthResult
+                {
+                    Succeeded = false,
+                    ErrorMessage = "User not found."
+                };
             }
             if (user.Password != password)
             {
-                return new AuthResult { Succeeded = false, ErrorMessage = "Invalid password." };
+                return new AuthResult
+                {
+                    Succeeded = false,
+                    ErrorMessage = "Invalid password."
+                };
             }
-            return new AuthResult { Succeeded = true , User=user};
+            return new AuthResult
+            {
+                Succeeded = true,
+                User = user
+            };
         }
-    }
-
-    public class AuthResult
-    {
-        public bool Succeeded { get; set; }
-        public string ErrorMessage { get; set; }
-        public User User { get; set;  }
     }
 }

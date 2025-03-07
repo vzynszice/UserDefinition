@@ -1,8 +1,8 @@
 ﻿@using DevExtreme.AspNet.Mvc
 @using DAL.Models
-
+<script src="~/js/grids/employees-grid.js"></script>
 @(
-Html.DevExtreme().DataGrid<DAL.Models.Employee>()
+Html.DevExtreme().DataGrid<DAL.Models.EmployeeModel>()
     .ID("employeesGrid")
     .ShowBorders(true)
     .Width("100%")
@@ -41,6 +41,7 @@ Html.DevExtreme().DataGrid<DAL.Models.Employee>()
                         .Editor(e => e.TextBox().MaxLength(11))
                         .ValidationRules(rules =>
                         {
+                            rules.AddRequired().Message("TC Kimlik No zorunludur");
                             rules.AddPattern()
                                 .Pattern("^[0-9]{11}$")
                                 .Message("TC Kimlik No 11 haneli rakamlardan oluşmalıdır");
@@ -98,145 +99,10 @@ Html.DevExtreme().DataGrid<DAL.Models.Employee>()
         .Controller("Home")
         .LoadAction("GetEmployees")
         .InsertAction("AddEmployee")
-        .DeleteAction("DeleteEmployee")
-        .UpdateAction("UpdateEmployee")
         .Key("id")
+        .OnBeforeSend("function(operation, ajaxSettings) { console.log('Operation:', operation); if (operation === 'insert' || operation === 'update') { ajaxSettings.contentType = 'application/json'; if (typeof ajaxSettings.data === 'string') { try { ajaxSettings.data = JSON.stringify(JSON.parse(ajaxSettings.data)); } catch(e) { console.error('Error parsing data:', e); } } else { ajaxSettings.data = JSON.stringify(ajaxSettings.data); console.log('Serialized data: ', ajaxSettings.data)} } }")
     )
 )
-
-<script>
-    function initializeEmployeeGrid() {
-        console.log("Grid initialization started");
-
-        var dataGrid = $("#employeesGrid").dxDataGrid("instance");
-
-        window.employeeForm_onFieldDataChanged = function(e) {
-            try {
-                console.log("Field changed event details:", e);
-
-                var popup = dataGrid._editPopup;
-                var form = popup.$content().find(".dx-form").dxForm("instance");
-
-                if (!form) {
-                    console.error("Form instance not found");
-                    return;
-                }
-
-                var formData = form.option("formData");
-                if (formData.isTechnician === undefined || formData.isTechnician === null) {
-                    formData.isTechnician = false; // veya 0
-                    form.option("formData", formData);
-                }
-                console.log("Current form data:", formData);
-
-                if (e.dataField === "name") {
-                    formData[e.dataField] = e.value;
-                    if (formData.name) {
-                        formData.email = (formData.name + "@@hyundaiassan.com.tr")
-                            .toLowerCase()
-                            .replace(/\s+/g, '')
-                            .replace(/[ğ]/g, 'g')
-                            .replace(/[ü]/g, 'u')
-                            .replace(/[ş]/g, 's')
-                            .replace(/[ı]/g, 'i')
-                            .replace(/[ö]/g, 'o')
-                            .replace(/[ç]/g, 'c');
-
-                        console.log("Generated email:", formData.email);
-
-                        var emailEditor = form.getEditor("email");
-                        if (emailEditor) {
-                            emailEditor.option("value", formData.email);
-                        }
-                    }
-
-                    form.option("formData", formData);
-                    var changes = dataGrid.option("editing.changes");
-
-                    if (changes.length > 0) {
-                        changes[0].data = { ...changes[0].data, ...formData };
-                        dataGrid.option("editing.changes", changes);
-                    }
-                }
-            } catch (error) {
-                console.error("Error in employeeForm_onFieldDataChanged:", error);
-            }
-        };
-
-        dataGrid.on("saving", function(e) {
-            console.log("Saving event triggered:", e);
-
-            var change = e.changes[0];
-            if (change && change.type !== "remove") {
-                var data = change.data;
-                if (!data.serviceID) {
-            // Mevcut satırın ServiceID'sini al
-                var currentRowData = e.component.getDataSource().items().find(item => item.id === change.key);
-                if (currentRowData) {
-                    data.serviceID = currentRowData.serviceID;
-                 }
-                }
-                if (data && data.name) {
-                    data.email = (data.name + "@@hyundaiassan.com.tr")
-                        .toLowerCase()
-                        .replace(/\s+/g, '')
-                        .replace(/[ğ]/g, 'g')
-                        .replace(/[ü]/g, 'u')
-                        .replace(/[ş]/g, 's')
-                        .replace(/[ı]/g, 'i')
-                        .replace(/[ö]/g, 'o')
-                        .replace(/[ç]/g, 'c');
-
-                    e.changes[0].data = data;
-                }
-            }
-        });
-
-        dataGrid.on("rowRemoved", function(e) {
-            console.log("Row successfully removed:", e);
-            dataGrid.refresh();
-        });
-
-        dataGrid.on("editingStart", function(e) {
-            console.log("Editing started:", e);
-            var editForm = e.component.getController('editing')._editForm;
-            if (editForm) {
-                editForm.option("onFieldDataChanged", window.employeeForm_onFieldDataChanged);
-            }
-        });
-    }
-
-    function editEmployeeRecord(id) {
-        var grid = $("#employeesGrid").dxDataGrid("instance");
-        grid.option("editing.popup.title", "Edit Employee");
-        grid.editRow(grid.getRowIndexByKey(id));
-    }
-
-    function deleteEmployeeRecord(id) {
-        var grid = $("#employeesGrid").dxDataGrid("instance");
-        grid.deleteRow(grid.getRowIndexByKey(id));
-    }
-
-    function onTechnicianChange(e) {
-        var form = e.component.getParentForm();
-        if (form) {
-            var formData = form.option("formData");
-            formData.isTechnician = e.value;
-            form.option("formData", formData);
-        }
-    }
-
-    $(document).on('click', '#employeesGrid .dx-datagrid-addrow-button', function() {
-        var grid = $("#employeesGrid").dxDataGrid("instance");
-        grid.option("editing.popup.title", "Add New Employee");
-        grid.addRow();
-    });
-
-    $(function() {
-        console.log("Document ready");
-        initializeEmployeeGrid();
-    });
-</script>
 
 <style>
     #employeesGrid {

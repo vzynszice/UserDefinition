@@ -1,94 +1,71 @@
-﻿using BLL.interfaces;
-using DAL.db;
-using DAL.interfaces;
+﻿using DAL.Exceptions;
 using DAL.Models;
+using DAL.Repositories;
 using DevExtreme.AspNet.Data;
 using DevExtreme.AspNet.Mvc;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using SystemManager.Abstractions.Data;
+using SystemManager.Abstractions.User;
 
 namespace BLL.Services
 {
-    public class UserService : GenericService<User>, IUserService
+    public class UserService : GenericService<UserModel>, IUserService
     {
-        private readonly ICurrentUserService _currentUserService;
-        public UserService(IUnitOfWork unitOfWork, ICurrentUserService currentUserService)
-            : base(unitOfWork)
+        private readonly IRepositoryManager _repositoryManager;
+
+        public UserService(IRepositoryManager repositoryManager) : base(repositoryManager)
         {
-            _currentUserService=currentUserService;
+            _repositoryManager = repositoryManager;
         }
-        protected override IGenericRepository<User> GetRepository()
+
+        public override IGenericRepository<UserModel> GetRepository()
         {
-            return _unitOfWork.Users;
+            return _repositoryManager.GetRepository<UserModel>();
         }
 
         public async Task<object> GetUsers(DataSourceLoadOptions loadOptions)
         {
-            var users=GetRepository().GetQueryable()
-                          .Select(u => new
-                          {
-                              u.ID,
-                              u.Username,
-                              u.Email,
-                              u.Name,
-                              u.Surname,
-                              u.Password,
-                              u.DealerID,
-                              u.ServiceID
-                          });
+            if (loadOptions == null)
+            {
+                throw new ValidationException("LoadOptions cannot be null");
+            }
+
+            var users = GetRepository().GetQueryable()
+                .Select(u => new
+                {
+                    u.ID,
+                    u.Username,
+                    u.Email,
+                    u.Name,
+                    u.Surname,
+                    u.DealerID,
+                    u.ServiceID,
+                    u.IsLockedOut
+                });
+
             return await DataSourceLoader.LoadAsync(users, loadOptions);
         }
+
         public async Task<bool> IsUsernameExists(string username)
         {
-            return await GetRepository().GetQueryable().AnyAsync(e => e.Username.Equals(username));
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ValidationException("Username cannot be empty");
+            }
+
+            return await GetRepository().GetQueryable()
+                .AnyAsync(e => e.Username.ToLower() == username.ToLower());
         }
-
-        public override async Task CreateAsync(User entity)
+        public async Task<bool> IsUsernameExistsExcept(string username, int userId)
         {
-            entity.CreatedOn = DateTime.Now;
-            entity.RowGuid = Guid.NewGuid();
-            entity.Active = 1;
-            entity.IsApproved = true;
-            entity.IsLockedOut = false;
-            entity.FailedPasswordAttemptCount = 0;
-            entity.FailedPasswordAnswerAttemptCount = 0;
-            entity.DoNotApplyCrmRole = false;
-            entity.IsSAPUser = 0;
-            entity.IsUserForSAP = false;
-            entity.IsUserForDMSWeb = true;
-            entity.IsRequiredMfa = false;
-            entity.IsPasswordTemporary = true;
-            entity.PasswordExpireDate = DateTime.Now.AddDays(90);
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                throw new ValidationException("Username cannot be empty");
+            }
 
-            await base.CreateAsync(entity);
-        }
-        public override async Task UpdateAsync(User entity)
-        {
-            var existingUser = await GetRepository().GetByIdAsync(entity.ID);
-            if (existingUser == null)
-                throw new Exception("User not found");
-
-            var originalCreatedOn = existingUser.CreatedOn;
-            var originalRowGuid = existingUser.RowGuid;
-
-            entity.CreatedOn = originalCreatedOn;
-            entity.RowGuid = originalRowGuid;
-            entity.IsUserForDMSWeb = true;
-            entity.ModifiedOn = DateTime.Now;
-            entity.ModifiedBy=_currentUserService.GetCurrentUserId();
-
-            await base.UpdateAsync(entity);
-        }
-        public override async Task DeleteAsync(int id)
-        {
-            await base.DeleteAsync(id);
-            await _unitOfWork.SaveChangesAsync();
-            await _unitOfWork.ResetIdentityAsync("User");
+            return await GetRepository().GetQueryable()
+                .Where(u => u.ID != userId)
+                .AnyAsync(e => e.Username.ToLower() == username.ToLower());
         }
     }
-
 }

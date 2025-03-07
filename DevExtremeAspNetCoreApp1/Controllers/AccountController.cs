@@ -1,30 +1,33 @@
-﻿using DAL.Models;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using BLL.interfaces;
+using SystemManager.Abstractions.Auth;
+using DAL.Models;
+using System.ComponentModel.DataAnnotations;
 
 namespace DevExtremeAspNetCoreApp1.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly IAuthService _authService;
-        public AccountController(IAuthService authService, ILogger<AccountController> logger)
+        private readonly IAuthenticationManager _authManager;
+        private readonly ILogger<AccountController> _logger;
+
+        public AccountController(
+            IAuthenticationManager authManager,
+            ILogger<AccountController> logger)
         {
-            _authService = authService;
-       
+            _authManager = authManager;
+            _logger = logger;
         }
 
-        // Login GET
         public IActionResult Login()
         {
-            return View(new User());
+            return View(new UserModel());
         }
 
-        // Login POST
         [HttpPost]
-        public async Task<IActionResult> Login([Bind("Username,Password")] User user)
+        public async Task<IActionResult> Login([Bind("Username,Password")] UserModel user)
         {
             foreach (var key in ModelState.Keys.ToList())
             {
@@ -33,28 +36,38 @@ namespace DevExtremeAspNetCoreApp1.Controllers
                     ModelState.Remove(key);
                 }
             }
+
             if (ModelState.IsValid)
             {
-                var result = await _authService.LoginAsync(user.Username,user.Password);
+                // AuthenticationManager zaten gerekli ValidationException 
+                // ve BusinessException'ları fırlatacak ve middleware yakalayacak
+                var result = await _authManager.LoginAsync(user.Username, user.Password);
+
                 if (result.Succeeded)
                 {
-
                     var claims = new List<Claim>
                     {
-                    new Claim(ClaimTypes.Name, user.Username),
-                    new Claim("UserId", result.User.ID.ToString())
+                        new Claim(ClaimTypes.Name, user.Username),
+                        new Claim("UserId", result.User.ID.ToString())
                     };
 
                     var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
                     var claimsPrincipal = new ClaimsPrincipal(claimsIdentity);
 
-                    await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, claimsPrincipal);
+                    await HttpContext.SignInAsync(
+                        CookieAuthenticationDefaults.AuthenticationScheme,
+                        claimsPrincipal);
+
                     return RedirectToAction("Index", "Home");
                 }
-                ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+
+                // Başarısız login durumunda ValidationException fırlat
+                throw new ValidationException("Invalid login attempt.");
             }
+
             return View(user);
         }
+
         [HttpPost]
         public async Task<IActionResult> Logout()
         {
@@ -62,5 +75,4 @@ namespace DevExtremeAspNetCoreApp1.Controllers
             return RedirectToAction("Login", "Account");
         }
     }
-
 }

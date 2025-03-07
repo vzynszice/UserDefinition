@@ -1,0 +1,211 @@
+﻿body {
+    background-image: url('/assets/hyundaiback.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Login Wrapper */
+#loginWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: baseline;
+    height: 100vh;
+    padding-right: 180px;
+}
+
+/* Form Container */
+.form-container {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 10px;
+    min-height: 450px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    width: 100%;
+    max-width: 650px;
+    min-width: 500px;
+}
+
+/* Logo Stilleri */
+.logo-container {
+    background-color: #fff;
+    padding: 10px;
+    display: inline-block;
+}
+
+.logo {
+    margin-bottom: 20px;
+}
+
+/* Form Eleman Stilleri */
+.text-style {
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    font-size: 18px;
+    color: #bdc3c7;
+    line-height: 1.5;
+    letter-spacing: 1px;
+    text-align: left;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.custom-btn {
+    width: 100%;
+    height: 50px;
+    font-size: 18px;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    text-transform: uppercase;
+    color: #fff;
+    background-color: #0056b3;
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+    .custom-btn:hover {
+        background-color: #1a5276;
+        transform: translateY(-2px);
+    }
+
+    .custom-btn:active {
+        transform: translateY(1px);
+    }
+
+.custom-textbox {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border: 2px solid #ccc;
+    border-radius: 5px;
+    outline: none;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+    .custom-textbox:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+    }
+
+/* Şifre Alanı Stilleri */
+.custom-password-field {
+    position: relative;
+}
+
+.password-toggle {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    cursor: pointer;
+    padding: 5px;
+    color: #666;
+    z-index: 2;
+    background: none;
+    border: none;
+}
+
+    .password-toggle:hover {
+        color: #333;
+    }
+
+/* Doğrulama Stilleri */
+.invalid-feedback {
+    display: none;
+    color: #dc3545;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.form-control.is-invalid {
+    border-color: #dc3545;
+}
+
+    .form-control.is-invalid ~ .invalid-feedback {
+        display: block;
+    }
+
+.no-password-toggle::-ms-reveal,
+.no-password-toggle::-ms-clear {
+    display: none !important;
+}
+
+#Password {
+    padding-right: 40px;
+}
+
+/* Yeni Eklenen Hasar Kaydı Stilleri */
+.damage-record-section {
+    margin-top: 30px;
+    text-align: center;
+}
+
+.divider {
+    position: relative;
+    margin: 20px 0;
+    text-align: center;
+}
+
+    .divider span {
+        background-color: #fff;
+        padding: 0 15px;
+        color: #bdc3c7;
+        font-size: 16px;
+        position: relative;
+        z-index: 1;
+    }
+
+    .divider::before {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: #e0e0e0;
+        z-index: 0;
+    }
+
+.damage-record-text {
+    color: #666;
+    font-size: 16px;
+    margin-top: 20px;
+    font-family: 'Arial', sans-serif;
+}
+
+.damage-record-link {
+    display: inline-block;
+    color: #0056b3;
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 5px;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+    .damage-record-link::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 2px;
+        bottom: -2px;
+        left: 0;
+        background-color: #0056b3;
+        transform: scaleX(0);
+        transform-origin: right;
+        transition: transform 0.3s ease;
+    }
+
+    .damage-record-link:hover {
+        color: #003d82;
+    }
+
+        .damage-record-link:hover::after {
+            transform: scaleX(1);
+            transform-origin: left;
+        }

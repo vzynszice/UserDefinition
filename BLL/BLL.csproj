@@ -8,11 +8,9 @@
 
   <ItemGroup>
     <PackageReference Include="DevExtreme.AspNet.Core" Version="24.1.7" />
-    <PackageReference Include="DevExtreme.AspNet.Data" Version="4.0.2" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\DAL\DAL.csproj" />
-  </ItemGroup>
-
+	<ItemGroup>
+		<ProjectReference Include="..\SystemManager\SystemManager.csproj" />
+	    <ProjectReference Include="..\DAL\DAL.csproj" />
+	</ItemGroup>
 </Project>

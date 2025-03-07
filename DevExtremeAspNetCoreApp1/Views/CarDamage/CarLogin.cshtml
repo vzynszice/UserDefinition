@@ -1,0 +1,47 @@
+﻿@model DAL.Models.UserModel
+@{
+    ViewData["Title"] = "Car Login";
+}
+<div id="loginWrapper" class="container-fluid">
+    <div id="loginForm" class="row justify-content-center align-items-center">
+        <div class="col-md-6">
+            <div class="form-container">
+                <div class="text-center mt-4">
+                    <div class="logo-container">
+                        <img src="~/assets/hyundailogo.png" alt="Logo" class="img-fluid logo" style="max-width: 250px;">
+                    </div>
+                </div>
+                <!-- Login Form Bölümü (Daha Yukarı Taşındı) -->
+                <form method="post" asp-action="Login" asp-controller="Car" id="loginFormValidation">
+                    <div class="form-group row mb-4">
+                        <label for="PlateNumber" class="col-md-4 col-form-label text-style">Plate Number</label>
+                        <div class="col-md-8">
+                            <input type="text" class="form-control custom-textbox" id="PlateNumber" name="PlateNumber" required minlength="3" />
+                            <div class="invalid-feedback">
+                                Plaka en az 3 karakter olmalıdır.
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group mb-4">
+                        <button type="submit" class="btn btn-primary custom-btn">Login</button>
+                    </div>
+                </form>
+
+                <!-- Logo Bölümü -->
+                
+
+                <!-- Hata Mesajları Bölümü -->
+                @if (!ViewData.ModelState.IsValid && ViewData.ModelState.Any())
+                {
+                    <div class="alert alert-danger mt-4">
+                        @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                        {
+                            <p>@error.ErrorMessage</p>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+<link rel="stylesheet" href="~/css/CarLogin.css" />

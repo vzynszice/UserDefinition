@@ -1,0 +1,31 @@
+﻿<script>
+    // KRİTİK: DevExtreme grid için gerekli global fonksiyonlar (Tüm tablar için)
+    var userGridInstance = null;
+    var dealerGridInstance = null;
+    var serviceGridInstance = null;
+    var employeeGridInstance = null;
+
+    // Users tab fonksiyonları
+    function onGridInitialized(e) {
+        console.log("Grid başlatıldı");
+        userGridInstance = e.component;
+    }
+
+    function onGridContentReady(e) {
+        // console.log("Grid içeriği hazır");
+    }
+
+    // Diğer tablar için fonksiyonlar burada olabilir...
+    // Örneğin:
+    function onDealerGridInitialized(e) {
+        dealerGridInstance = e.component;
+    }
+
+    function onServiceGridInitialized(e) {
+        serviceGridInstance = e.component;
+    }
+
+    function onEmployeeGridInitialized(e) {
+        employeeGridInstance = e.component;
+    }
+</script>
